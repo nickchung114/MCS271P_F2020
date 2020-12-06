@@ -87,9 +87,9 @@ int greedyFlip(std::vector<std::vector<int>> clauses) {
 //
 std::vector<bool> maxSAT(float p, int maxFlips, int maxInterations, std::vector<std::vector<int> > clauses) {
     int m = int(clauses.size()); //number of clauses in CNF form
-    int n = int(literals.size()); //number of unique variable in CNF form
+    int n = int(literals.size()) - 1; //number of unique variable in CNF form
     std::vector<bool> result;
-    initializeLiterals(int(literals.size()), result);
+    initializeLiterals(n, result);
     randomModelGeneration(result);
     for (int i = 1; i <= maxInterations; i++) {
         randomModelGeneration(literals); //initialize values of literals randomly
@@ -267,6 +267,15 @@ int main(int argc, char** argv) {
         literals[to_flip] = !literals[to_flip];
         max = ncs(clauses, literals);
         std::cout << "After 2nd greedy flip\n";
+        printLiterals();
+        std::cout << "New number of true clauses: " << max << "\n";
+
+        //Testing the maxSAT
+        float p = 0.6;
+        int n = 10;
+        literals = maxSAT(p, n, n, clauses);
+        max = ncs(clauses, literals);
+        std::cout << "After maxSAT\n";
         printLiterals();
         std::cout << "New number of true clauses: " << max << "\n";
 
