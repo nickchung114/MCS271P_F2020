@@ -46,7 +46,7 @@ int ncs(std::vector<std::vector<int>> clauses, std::vector<bool> literals) {
     for (int i = 0; i < int(clauses.size()); i++) {
         clauseValue = false;
         for (int j = 0; j < int(clauses[i].size()); j++) {
-            if (clauses[i][j] < 0) clauseValue != literals[clauses[i][j] * (-1)];
+            if (clauses[i][j] < 0) clauseValue = !literals[clauses[i][j] * (-1)];
             else clauseValue = literals[clauses[i][j]];
             if (clauseValue) {
                 numTrue++;
@@ -256,19 +256,12 @@ int main(int argc, char** argv) {
         std::cout << "Number of true clauses: " << max << "\n";
 
         //Testing the greedy flip
-        int to_flip = greedyFlip(clauses);
+        /*int to_flip = greedyFlip(clauses);
         literals[to_flip] = !literals[to_flip];
         max = ncs(clauses, literals);
         std::cout << "After 1 st greedy flip\n";
         printLiterals();
-        std::cout << "New number of true clauses: " << max << "\n";
-
-        to_flip = greedyFlip(clauses);
-        literals[to_flip] = !literals[to_flip];
-        max = ncs(clauses, literals);
-        std::cout << "After 2nd greedy flip\n";
-        printLiterals();
-        std::cout << "New number of true clauses: " << max << "\n";
+        std::cout << "New number of true clauses: " << max << "\n";*/
 
         //Testing the maxSAT
         float p = 0.6;
