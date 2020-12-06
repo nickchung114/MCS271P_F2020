@@ -76,6 +76,9 @@ int greedyFlip(std::vector<std::vector<int>> clauses) {
             current_max = temp_max;
         }
         literals[j] = !literals[j];
+        if (current_max == int(clauses.size())) {
+            return idx;
+        }
     }
     return idx;
 }
