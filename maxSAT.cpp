@@ -40,7 +40,7 @@ void randomModelGeneration(std::vector<bool>& literals) {
 //
 
 //Determines the number of true clauses
-int ncs(std::vector<std::vector<int>> clauses, std::vector<bool> literals) {
+int ncs(const std::vector<std::vector<int>>& clauses, const std::vector<bool>& literals) {
     int numTrue = 0;
     bool clauseValue = true;
     for (int i = 0; i < int(clauses.size()); i++) {
@@ -64,7 +64,7 @@ int ncs(std::vector<std::vector<int>> clauses, std::vector<bool> literals) {
 //
 
 //Greedily flips a literal to obtain a better output
-int greedyFlip(std::vector<std::vector<int>> clauses) {
+int greedyFlip(const std::vector<std::vector<int>>& clauses) {
     int current_max = ncs(clauses, literals);
     int temp_max = 0;
     int idx = 0;
@@ -88,7 +88,7 @@ int greedyFlip(std::vector<std::vector<int>> clauses) {
 
 //START MAXSAT
 //
-std::vector<bool> maxSAT(float p, int maxFlips, int maxInterations, std::vector<std::vector<int> > clauses) {
+std::vector<bool> maxSAT(float p, int maxFlips, int maxInterations,const std::vector<std::vector<int>>& clauses) {
     int m = int(clauses.size()); //number of clauses in CNF form
     int n = int(literals.size()) - 1; //number of unique variable in CNF form
     std::vector<bool> result;
