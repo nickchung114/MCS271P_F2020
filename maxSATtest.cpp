@@ -116,6 +116,7 @@ int greedyFlip(const std::vector<std::vector<int> >& clauses) {
 
 //START MAXSAT
 //
+
 std::vector<bool> maxSAT(float p, int maxFlips, int maxInterations, const std::vector<std::vector<int> >& clauses) {
     int m = int(clauses.size()); //number of clauses in CNF form
     int n = int(literals.size()) - 1; //number of unique variable in CNF form
