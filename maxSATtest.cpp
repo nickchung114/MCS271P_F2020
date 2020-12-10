@@ -72,10 +72,10 @@ int ncs(const std::vector<std::vector<int> >& clauses, const std::vector<bool>& 
     int numTrue = 0;
     bool clauseValue = true;
     for (int i = 0; i < int(clauses.size()); i++) {
-        clauseValue = true;
+        clauseValue = false;
         for (int j = 0; j < int(clauses[i].size()); j++) {
-            if (clauses[i][j] < 0) clauseValue = clauseValue && !literals[clauses[i][j] * (-1)];
-            else clauseValue = clauseValue && literals[clauses[i][j]];
+            if (clauses[i][j] < 0) clauseValue = !literals[clauses[i][j] * (-1)];
+            else clauseValue = literals[clauses[i][j]];
 	    if (clauseValue) {
             	numTrue++;
 		j = clauses[i].size();
