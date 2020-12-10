@@ -11,6 +11,34 @@
 std::vector<bool> literals;
 
 
+//START DEBUG PRINTING
+//
+
+//Prints the clauses (debugging)
+void print(std::vector<std::vector<int> > clauses, int n, int k, int m) {
+    std::cout << "\n\nThe number of literals is: " << n << "\n";
+    std::cout << "The number of clauses is: " << m << "\n";
+    std::cout << "The number of literals per clause is: " << k << "\n\n";
+    for (int i = 0; i < int(clauses.size()); i++) {
+        for (int j = 0; j < int(clauses[i].size()); j++) {
+            std::cout << clauses[i][j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n\n";
+}
+
+void printLiterals() {
+    for (int i = 1; i < int(literals.size()); i++) {
+        std::cout << i << " = " << literals[i] << "\n";
+    }
+    std::cout << "\n\n";
+}
+
+//
+//END DEBUG PRINTING
+
+
 //START MODEL CREATION
 //
 
@@ -24,7 +52,7 @@ void initializeLiterals(int n, std::vector<bool>& literals) {
 
 //Random initialization of values
 void randomModelGeneration(std::vector<bool>& literals) {
-    srand(time(NULL));
+    //srand(time(NULL));
     int temp = 0;
     for (int i = 0; i < int(literals.size()); i++) {
         temp = rand() % 10;
@@ -40,7 +68,7 @@ void randomModelGeneration(std::vector<bool>& literals) {
 //
 
 //Determines the number of true clauses
-int ncs(const std::vector<std::vector<int>>& clauses, const std::vector<bool>& literals) {
+int ncs(const std::vector<std::vector<int> >& clauses, const std::vector<bool>& literals) {
     int numTrue = 0;
     bool clauseValue = true;
     for (int i = 0; i < int(clauses.size()); i++) {
@@ -48,9 +76,9 @@ int ncs(const std::vector<std::vector<int>>& clauses, const std::vector<bool>& l
         for (int j = 0; j < int(clauses[i].size()); j++) {
             if (clauses[i][j] < 0) clauseValue = !literals[clauses[i][j] * (-1)];
             else clauseValue = literals[clauses[i][j]];
-            if (clauseValue) {
-                numTrue++;
-                j = int(clauses[i].size());
+	    if (clauseValue) {
+            	numTrue++;
+		j = clauses[i].size();
             }
         }
     }
@@ -64,7 +92,7 @@ int ncs(const std::vector<std::vector<int>>& clauses, const std::vector<bool>& l
 //
 
 //Greedily flips a literal to obtain a better output
-int greedyFlip(const std::vector<std::vector<int>>& clauses) {
+int greedyFlip(const std::vector<std::vector<int> >& clauses) {
     int current_max = ncs(clauses, literals);
     int temp_max = 0;
     int idx = 0;
@@ -88,9 +116,11 @@ int greedyFlip(const std::vector<std::vector<int>>& clauses) {
 
 //START MAXSAT
 //
-std::vector<bool> maxSAT(float p, int maxFlips, int maxInterations,const std::vector<std::vector<int>>& clauses) {
+
+std::vector<bool> maxSAT(float p, int maxFlips, int maxInterations, const std::vector<std::vector<int> >& clauses) {
     int m = int(clauses.size()); //number of clauses in CNF form
     int n = int(literals.size()) - 1; //number of unique variable in CNF form
+    srand(time(NULL));
     std::vector<bool> result;
     initializeLiterals(n, result);
     randomModelGeneration(result);
@@ -100,19 +130,20 @@ std::vector<bool> maxSAT(float p, int maxFlips, int maxInterations,const std::ve
             if (ncs(clauses, literals) == m) {
                 return literals;
             }
-            srand(time(NULL));
-            float x = (float)rand() / RAND_MAX; //random real number between 0 and 1
+	    float x = (float) rand() / RAND_MAX;     //Random decimal between 0 and 1
             int y = 0;
             if (x < p) {
                 y = rand() % n + 1; //random integer between 1 and n
+                //std::cout << "Random: " << x << "\n";
             }
             else {
                 y = greedyFlip(clauses);
+ 		//std::cout << "Greedy\n";
             }
             if (y == 0) {
                 break;
             }
-            literals[y] != literals[y];
+            literals[y] = !literals[y];
         }
         if (ncs(clauses, literals) > ncs(clauses, result)) {
             result = literals;
@@ -204,33 +235,6 @@ int getNumClauses(std::string line) {
 //
 //END READ INPUT
 
-//START DEBUG PRINTING
-//
-
-//Prints the clauses (debugging)
-void print(std::vector<std::vector<int> > clauses, int n, int k, int m) {
-    std::cout << "\n\nThe number of literals is: " << n << "\n";
-    std::cout << "The number of clauses is: " << m << "\n";
-    std::cout << "The number of literals per clause is: " << k << "\n\n";
-    for (int i = 0; i < int(clauses.size()); i++) {
-        for (int j = 0; j < int(clauses[i].size()); j++) {
-            std::cout << clauses[i][j] << " ";
-        }
-        std::cout << "\n";
-    }
-    std::cout << "\n\n";
-}
-
-void printLiterals() {
-    for (int i = 1; i < int(literals.size()); i++) {
-        std::cout << i << " = " << literals[i] << "\n";
-    }
-    std::cout << "\n\n";
-}
-
-//
-//END DEBUG PRINTING
-
 int main(int argc, char** argv) {
     std::ifstream infile;
     int n = 0, m = 0, k = 0;
@@ -252,11 +256,11 @@ int main(int argc, char** argv) {
             return -1;
         }
         print(clauses, n, k, m);
-
+/*
         randomModelGeneration(literals);
-        printLiterals();
+        printLiterals(); 
         int max = ncs(clauses, literals);
-        std::cout << "Number of true clauses: " << max << "\n";
+        std::cout << "Number of true clauses: " << max << "\n"; */
 
         //Testing the greedy flip
         /*int to_flip = greedyFlip(clauses);
@@ -268,9 +272,9 @@ int main(int argc, char** argv) {
 
         //Testing the maxSAT
         float p = 0.6;
-        int n = 10;
-        literals = maxSAT(p, n, n, clauses);
-        max = ncs(clauses, literals);
+        int n = 100;
+        literals = maxSAT(p, 150, 100, clauses);
+        int max = ncs(clauses, literals);
         std::cout << "After maxSAT\n";
         printLiterals();
         std::cout << "New number of true clauses: " << max << "\n";
