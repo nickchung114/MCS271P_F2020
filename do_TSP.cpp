@@ -1,13 +1,18 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <algorithm>
 
 using namespace std;
 
 //////////////////// HELPER ALGORITHM FUNCTIONS ////////////////////
 
 void reduce(vector<vector<double>>& D, double& path_len) {
-	int i, j, min, n = D.size();
+	int i, j, n = D.size();
+	double min;
 	
 	// reduce rows
 	for(i = 0; i < n; i++) {
@@ -52,7 +57,7 @@ vector<pair<int,double>> sort_dist_from(vector<vector<double>>& D, int x) {
 	
 	for(int i = 0; i < D.size(); i++)
 		ans.push_back({i,D[x][i]});
-	ans.sort(ans.begin(),ans.end(),less_than_key());
+	sort(ans.begin(),ans.end(),less_than_key());
 	
 	return ans;
 }
@@ -70,7 +75,7 @@ void TSP(vector<int> path,
 		 vector<int>& best_path,
 		 double& best_len) {
 	if(path.size() == D.size()) {
-		int tot_len = path_len + D[*path.back()][*path.front()]; 
+		double tot_len = path_len + D[path.back()][path.front()]; 
 		
 		if(tot_len < best_len) {
 			best_path.swap(path);
@@ -83,15 +88,15 @@ void TSP(vector<int> path,
 		// prune branch if min len exceeds curr soln
 		if(path_len >= best_len) return; 
 		// node ordering
-		vector<pair<int,double>> snodes = sort_dist_from(D,*path.back());
+		vector<pair<int,double>> snodes = sort_dist_from(D,path.back());
 		for(int i = 0; i < snodes.size(); i++)
 			// curr node hasn't been visited and doesn't exceed curr soln's length
-			if(D[*path.back()][snodes[i].first] != numeric_limits<double>::max()
-				&& D[*path.back()][snodes[i].first] + path_len < best_len)
+			if(D[path.back()][snodes[i].first] != numeric_limits<double>::max()
+				&& D[path.back()][snodes[i].first] + path_len < best_len)
 				// add curr node to curr path & "delete" all distances to curr node
 				TSP(combine(path,snodes[i].first), 
 				    visit(D,snodes[i].first), 
-					D[*path.back()][snodes[i].first] + path_len,
+					D[path.back()][snodes[i].first] + path_len,
 					best_path,
 					best_len);
 	}
@@ -126,7 +131,7 @@ void do_alg(vector<vector<double>> D) {
 vector<double> split_nums(string line) {
 	string elem;
 	vector<double> row;
-	stringstream ssline(line);
+	istringstream ssline(line);
 	
 	while(getline(ssline,elem,' '))
 		row.push_back(stod(elem));
@@ -134,7 +139,7 @@ vector<double> split_nums(string line) {
 }
 
 vector<vector<double>> get_dist(string fn) {
-	ofstream myfile;
+	ifstream myfile;
 	string line;
 	vector<vector<double>> dist;
 	vector<double> row;
@@ -146,8 +151,8 @@ vector<vector<double>> get_dist(string fn) {
 	}
 	myfile.close();
 	
-	for(int i = 0; i < D.size(); i++)
-		D[i][i] = numeric_limits<double>::max();
+	for (int i = 0; i < dist.size(); i++)
+		dist[i][i] = numeric_limits<double>::max();
 	
 	return dist;
 }
@@ -167,18 +172,20 @@ bool file_exists(string fn) {
 }
 
 string get_fn(char ** argv, int i) {
-	return "tsp-problem-" + str(argv[1]) +
-	     + "-" + str(argv[2]) 
-		 + "-" + str(argv[3])
-		 + "-" + str(argv[4])
-		 + "-" + to_string(i);
+	string fn = "tsp-problem-";
+	for (int i = 1; i <= 4; i++) {
+		for (int j = 0; argv[i][j] != '\0'; j++)
+			fn += argv[i][j];
+		if (i != 4) fn += '-';
+	}
+	return fn + to_string(i);
 }
 
 bool is_number(const std::string& s)
 {
-    string::iterator it = s.begin();
-    while (it != s.end() && std::isdigit(*it)) ++it;
-    return !s.empty() && it == s.end();
+	int i;
+	for (i = 0; i < s.length() && isdigit(s[i]); i++);
+	return !s.empty() && i == s.length();
 }
 
 //////////////////// MAIN ////////////////////
@@ -191,14 +198,14 @@ bool valid_args(int argc, char ** argv) {
 }
 
 int main(int argc, char ** argv) {	
-	if(valid_args(argc,argv)) {
+	if(!valid_args(argc,argv)) {
 		cout << "Add arguments for n, k, u, v, p" << endl;
 		return 1;
 	}
 	
 	// for each file
 	for(int i = 1; i <= stoi(argv[5]); i++) {
-		if(!file_exists(get_fn(argv,i)) return 1;
+		if(!file_exists(get_fn(argv,i))) return 1;
 		do_alg(get_dist(get_fn(argv,i)));
 	}
 	
