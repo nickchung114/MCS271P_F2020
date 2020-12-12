@@ -1,6 +1,6 @@
 # MCS271P_F2020
 ## (1) SLS - maxSAT.cpp
- Max-SAT - Use SLS approachh to find a true/false (0/1) assignment to variables such that the number of clauses satisfied is maximized. (See details in `maxSAT.cpp`)
+ Max-SAT - Use SLS approach to find a true/false (0/1) assignment to variables such that the number of clauses satisfied is maximized. (See details in `maxSAT.cpp`)
  #### usage
 ```bash
 g++ maxSAT.cpp -o maxSAT
