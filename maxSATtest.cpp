@@ -7,6 +7,7 @@
 #include <map>
 #include <stdlib.h>
 #include <time.h>
+#include <chrono>
 
 std::vector<bool> literals;
 
@@ -273,11 +274,24 @@ int main(int argc, char** argv) {
         //Testing the maxSAT
         float p = 0.6;
         int n = 100;
+        // Get starting timepoint 
+        auto start = std::chrono::high_resolution_clock::now();
+
+        //call the function - maxSAT
         literals = maxSAT(p, 150, 100, clauses);
+
+        // Get ending timepoint 
+        auto stop = std::chrono::high_resolution_clock::now();
+
         int max = ncs(clauses, literals);
         std::cout << "After maxSAT\n";
         printLiterals();
         std::cout << "New number of true clauses: " << max << "\n";
+        // Get duration. Substart timepoints to  
+        // get durarion. To cast it to proper unit 
+        // use duration cast method 
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+        std::cout << "Running time of maxSAT (in microseconds): " << duration.count() << std::endl;
 
     }
     else {
