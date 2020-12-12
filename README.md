@@ -16,6 +16,7 @@ The input file must have: <br/>
     if a variable is negated, it has a "-" symbol before it, e.g., ~X5 is written as "-5" (without quotes) <br/>
     all literals are delimited by a whitespace, <br/>
     e.g., if the clause is X1 v ~X5 v X35, the row is "1 -5 35" (without quotes)) <br/>
+    
 The output: Print the true/false (0/1) assignment of variables and the number of satisfied clauses. <br/>
 
 ## (2) BnB-DFS - do_TSP.cpp
