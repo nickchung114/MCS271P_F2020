@@ -5,8 +5,19 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <regex>
 
 using namespace std;
+
+//////////////////// HELPER PRINT FUNCTIONS ////////////////////
+
+void print_v(vector<int> v, string delim=" ") {
+	for (int i = 0; i < v.size(); i++) {
+		cout << v[i];
+		if (i + 1 != v.size()) cout << delim;
+	}
+	cout << endl;
+}
 
 //////////////////// HELPER ALGORITHM FUNCTIONS ////////////////////
 
@@ -19,9 +30,12 @@ void reduce(vector<vector<double>>& D, double& path_len) {
 		min = numeric_limits<double>::max();
 		for(j = 0; j < n && min != 0; j++)
 			min = D[i][j] < min ? D[i][j] : min;
-		for(j = 0; j < n; j++)
-			D[i][j] -= min;
-		path_len += min;
+		if (min != numeric_limits<double>::max()) {
+			for (j = 0; j < n; j++)
+				if(D[i][j] != numeric_limits<double>::max())
+					D[i][j] -= min;
+			path_len += min;
+		}
 	}
 	
 	// reduce columns
@@ -29,16 +43,19 @@ void reduce(vector<vector<double>>& D, double& path_len) {
 		min = numeric_limits<double>::max();
 		for(i = 0; i < n && min != 0; i++)
 			min = D[i][j] < min ? D[i][j] : min;
-		for(i = 0; i < n; i++)
-			D[i][j] -= min;
-		path_len += min;
+		if (min != numeric_limits<double>::max()) {
+			for (i = 0; i < n; i++)
+				if(D[i][j] != numeric_limits<double>::max())
+					D[i][j] -= min;
+			path_len += min;
+		}
 	}
 }
 
 vector<vector<double>> visit(vector<vector<double>> D, int x) {
 	int i, n = D.size();
 	for(i = 0; i < n; i++) {
-		D[x][i] = numeric_limits<double>::max(); 
+		//D[x][i] = numeric_limits<double>::max(); 
 		D[i][x] = numeric_limits<double>::max();
 	}
 	return D;
@@ -68,37 +85,60 @@ vector<int> combine(vector<int> path, int i) {
 }
 
 //////////////////// MAIN ALGORITHM ////////////////////
+#define DEBUG
 
 void TSP(vector<int> path, 
          vector<vector<double>> D,
 		 double path_len,
 		 vector<int>& best_path,
-		 double& best_len) {
+		 double& best_len,
+		 vector<double>& DZ) {
 	if(path.size() == D.size()) {
-		double tot_len = path_len + D[path.back()][path.front()]; 
+		double tot_len = path_len + DZ[path.back()]; 
 		
 		if(tot_len < best_len) {
 			best_path.swap(path);
 			best_len = tot_len;
+#ifdef DEBUG
+			cout << "\nNew best path: " << path_len << endl;
+			//print_v(path);
+#endif
 		}
+#ifdef DEBUG
+		else {
+			cout << "end ";
+			//print_v(path);
+		}
+#endif
 	}
 	else {
 		// reduce current distance matrix
 		reduce(D,path_len); 
 		// prune branch if min len exceeds curr soln
-		if(path_len >= best_len) return; 
+		if (path_len >= best_len) {
+#ifdef DEBUG
+			cout << path.size() << " ";
+			//print_v(path);
+#endif
+			return;
+		}
 		// node ordering
 		vector<pair<int,double>> snodes = sort_dist_from(D,path.back());
 		for(int i = 0; i < snodes.size(); i++)
 			// curr node hasn't been visited and doesn't exceed curr soln's length
-			if(D[path.back()][snodes[i].first] != numeric_limits<double>::max()
-				&& D[path.back()][snodes[i].first] + path_len < best_len)
+			if (D[path.back()][snodes[i].first] != numeric_limits<double>::max()
+				&& D[path.back()][snodes[i].first] + path_len < best_len) {
+#ifdef DEBUG
+				//cout << "just added " << snodes[i].first << endl;
+#endif
 				// add curr node to curr path & "delete" all distances to curr node
-				TSP(combine(path,snodes[i].first), 
-				    visit(D,snodes[i].first), 
+				TSP(combine(path, snodes[i].first),
+					visit(D, snodes[i].first),
 					D[path.back()][snodes[i].first] + path_len,
 					best_path,
-					best_len);
+					best_len,
+					DZ);
+			}
 	}
 }
 
@@ -111,19 +151,31 @@ void print_ans(vector<int> best_path, double best_len) {
 	cout << endl << "and has a length = " << best_len << endl;
 }
 
-void do_alg(vector<vector<double>> D) {
+vector<double> get_DZ(vector<vector<double>>& D) {
+	vector<double> ans;
+	for (int i = 0; i < D.size(); i++)
+		ans.push_back(D[i][0]);
+	return ans;
+}
+
+double do_alg(vector<vector<double>> D) {
 	vector<int> curr_path;
 	vector<int> best_path;
 	double best_len = numeric_limits<double>::max();
-	
+	vector<double> DZ = get_DZ(D); // distance from node i to node 0
+
 	curr_path.push_back(0);
 	
-	TSP(curr_path,D,0,best_path,best_len);
+	TSP(curr_path,D,0,best_path,best_len,DZ);
 	
-	if(best_path.size() != D.size())
+	if (best_path.size() != D.size()) {
 		cout << "Failed to find a best path!" << endl;
-	else
-		print_ans(best_path,best_len);
+		return -1;
+	}
+	else {
+		//print_ans(best_path, best_len);
+		return best_len;
+	}
 }
 
 //////////////////// DISTANCE MATRIX CONSTRUCTION ////////////////////
@@ -138,14 +190,14 @@ vector<double> split_nums(string line) {
 	return row;
 }
 
-vector<vector<double>> get_dist(string fn) {
+vector<vector<double>> get_dist(string fn, string dir = "") {
 	ifstream myfile;
 	string line;
 	vector<vector<double>> dist;
 	vector<double> row;
 	int i = 0;
 	
-	myfile.open(fn);
+	myfile.open(dir + "\\" + fn);
 	while(getline(myfile,line)) {
 		if(i++>0) dist.push_back(split_nums(line));
 	}
@@ -160,7 +212,7 @@ vector<vector<double>> get_dist(string fn) {
 //////////////////// FILE I/O HELPER FUNCTIONS ////////////////////
 
 bool file_exists(string fn) {
-	ofstream myfile;
+	ifstream myfile;
 	
 	myfile.open(fn);
 	if(myfile.fail()) {
@@ -178,7 +230,7 @@ string get_fn(char ** argv, int i) {
 			fn += argv[i][j];
 		if (i != 4) fn += '-';
 	}
-	return fn + to_string(i);
+	return fn + to_string(i) + ".txt";
 }
 
 bool is_number(const std::string& s)
@@ -186,6 +238,43 @@ bool is_number(const std::string& s)
 	int i;
 	for (i = 0; i < s.length() && isdigit(s[i]); i++);
 	return !s.empty() && i == s.length();
+}
+
+//////////////////// BENCHMARK BATCH PROCESSING //////////////////////
+
+/*
+* get a list of files
+* for each file, run TSP
+*/
+
+vector<string> get_fn_list(string dest_dir) {
+	ifstream myfile;
+	string line;
+	string INPUT_LIST = "\\list.txt";
+	vector<string> fn_list;
+
+	if (file_exists(dest_dir + INPUT_LIST)) {
+		myfile.open(dest_dir + INPUT_LIST);
+		while (getline(myfile, line)) {
+			if (line.substr(0, 11) == "tsp-problem")
+				fn_list.push_back(line);
+		}
+		myfile.close();
+	}
+	return fn_list;
+}
+
+vector<int> extract_params(string tsp_fn) {
+	regex rgx(R"(tsp-problem-(\d+)-(\d+)-(\d+)-(\d+).*)");
+	vector<int> ans;
+	smatch m;
+
+	if (regex_search(tsp_fn, m, rgx)) {
+		for (int i = 1; i < 5; i++) {
+			ans.push_back(stoi(m[i]));
+		}
+	}
+	return ans;
 }
 
 //////////////////// MAIN ////////////////////
@@ -197,7 +286,21 @@ bool valid_args(int argc, char ** argv) {
 	return ans && argc == 6;
 }
 
+#define BATCH
 int main(int argc, char ** argv) {	
+#ifdef BATCH
+	string t_dir = "C:\\Users\\Nicholas\\Documents\\MCS Program\\Q1\\CS271P\\project\\cs271p\\fall20-benchmark-tsp-problems";
+	vector<string> fn_list = get_fn_list(t_dir);
+	//print_v(fn_list, "\n");
+	for (auto a : fn_list) {
+		for (auto p : extract_params(a)) cout << p << " ";
+
+		double t = do_alg(get_dist(a,t_dir));
+		
+		// output
+		cout << t << endl;
+	}
+#else
 	if(!valid_args(argc,argv)) {
 		cout << "Add arguments for n, k, u, v, p" << endl;
 		return 1;
@@ -208,6 +311,6 @@ int main(int argc, char ** argv) {
 		if(!file_exists(get_fn(argv,i))) return 1;
 		do_alg(get_dist(get_fn(argv,i)));
 	}
-	
+#endif
 	return 0;
 }
