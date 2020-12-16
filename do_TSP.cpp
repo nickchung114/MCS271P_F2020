@@ -197,9 +197,10 @@ vector<vector<double>> get_dist(string fn, string dir = "") {
 	vector<double> row;
 	int i = 0;
 	
-	myfile.open(dir + "\\" + fn);
+	fn = dir == "" ? fn : dir + "\\" + fn;
+	myfile.open(fn);
 	while(getline(myfile,line)) {
-		if(i++>0) dist.push_back(split_nums(line));
+		dist.push_back(split_nums(line));
 	}
 	myfile.close();
 	
@@ -225,10 +226,9 @@ bool file_exists(string fn) {
 
 string get_fn(char ** argv, int i) {
 	string fn = "tsp-problem-";
-	for (int i = 1; i <= 4; i++) {
-		for (int j = 0; argv[i][j] != '\0'; j++)
-			fn += argv[i][j];
-		if (i != 4) fn += '-';
+	for (int j = 1; j <= 4; j++) {
+		fn += argv[j];
+		fn += '-';
 	}
 	return fn + to_string(i) + ".txt";
 }
@@ -308,8 +308,17 @@ int main(int argc, char ** argv) {
 	
 	// for each file
 	for(int i = 1; i <= stoi(argv[5]); i++) {
-		if(!file_exists(get_fn(argv,i))) return 1;
-		do_alg(get_dist(get_fn(argv,i)));
+		string fn = get_fn(argv, i);
+		if(!file_exists(fn)) return 1;
+		//Test get_dist
+		vector<vector<double>> dist = get_dist(fn);
+		for (int i = 0; i < dist.size(); i++) {
+			for (int j = 0; j < dist.size(); j++) {
+				cout << dist[i][j] << " ";
+			}
+			cout << endl;
+		}
+		do_alg(get_dist(fn));
 	}
 #endif
 	return 0;
