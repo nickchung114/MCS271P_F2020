@@ -199,6 +199,7 @@ vector<vector<double>> get_dist(string fn, string dir = "") {
 	
 	fn = dir == "" ? fn : dir + "\\" + fn;
 	myfile.open(fn);
+	getline(myfile, line);
 	while(getline(myfile,line)) {
 		dist.push_back(split_nums(line));
 	}
