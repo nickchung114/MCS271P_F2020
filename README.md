@@ -21,3 +21,20 @@ The output: Print the true/false (0/1) assignment of variables and the number of
 
 ## (2) BnB-DFS - do_TSP.cpp
  Travelling Sales Person - Use BnB-DFS to find an ordered list of the locations (each location appears on the list exactly once), such that the total distance travelled is minimized. (See details in `do_TSP.cpp`)
+  #### usage
+```bash
+g++ do_TSP.cpp -o so_TSP
+do_TSP [n] [k] [u] [v] [p]
+```
+
+Each file has name: tsp-problem-{n}-{k}-{u}-{v}-{p}.txt  <br/> 
+&nbsp;&nbsp;&nbsp;(where {n}, {k}, {u}, {v}, {p} are the corresponding parameters <br/> 
+ 
+Parameters: <br/> 
+- n  --  number of locations <br/>
+- k  --  number of distinct distance values to use <br/>
+- u  --  mean of normal distribution for distances <br/>
+- v  --  variance (standard deviation) of normal distribution for distances <br/>
+- p  --  number of problem instances to generate </br>
+
+The output: Print an ordered list of the locations and its tour length that minimizes the total distance. <br/>
