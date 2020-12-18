@@ -6,6 +6,7 @@
 #include <sstream>
 #include <algorithm>
 #include <regex>
+#include <time.h>
 
 using namespace std;
 
@@ -85,28 +86,43 @@ vector<int> combine(vector<int> path, int i) {
 }
 
 //////////////////// MAIN ALGORITHM ////////////////////
-#define DEBUG
-
+//#define DEBUG
+int TSP_COUNT = 0;
+clock_t G_TIMER;
+int TIMEOUT = 15*30;
+/*
+vector<int> best_path;
+double best_len = numeric_limits<double>::max();
+vector<vector<double>> D;
+vector<double> DZ;
+*/
 void TSP(vector<int> path, 
          vector<vector<double>> D,
 		 double path_len,
 		 vector<int>& best_path,
 		 double& best_len,
 		 vector<double>& DZ) {
+#ifdef DEBUG
+	if (++TSP_COUNT % 1000000 == 0) cout << (int)(TSP_COUNT/1000000) << " ";
+#endif
+	++TSP_COUNT;
+	if (((float)(clock() - G_TIMER)) / CLOCKS_PER_SEC > TIMEOUT) {
+		//cout << "TIMEOUT" << endl;
+		return;
+	}
 	if(path.size() == D.size()) {
 		double tot_len = path_len + DZ[path.back()]; 
 		
 		if(tot_len < best_len) {
 			best_path.swap(path);
 			best_len = tot_len;
-#ifdef DEBUG
-			cout << "\nNew best path: " << path_len << endl;
+			cout << "New best path: " << tot_len << endl;
+			cout << TSP_COUNT << endl;
 			//print_v(path);
-#endif
 		}
 #ifdef DEBUG
 		else {
-			cout << "end ";
+			//cout << "X ";
 			//print_v(path);
 		}
 #endif
@@ -117,7 +133,7 @@ void TSP(vector<int> path,
 		// prune branch if min len exceeds curr soln
 		if (path_len >= best_len) {
 #ifdef DEBUG
-			cout << path.size() << " ";
+			//cout << path.size() << " ";
 			//print_v(path);
 #endif
 			return;
@@ -133,7 +149,7 @@ void TSP(vector<int> path,
 #endif
 				// add curr node to curr path & "delete" all distances to curr node
 				TSP(combine(path, snodes[i].first),
-					visit(D, snodes[i].first),
+					visit(D, path.back()),//snodes[i].first),
 					D[path.back()][snodes[i].first] + path_len,
 					best_path,
 					best_len,
@@ -143,7 +159,7 @@ void TSP(vector<int> path,
 }
 
 void print_ans(vector<int> best_path, double best_len) {
-	cout << "A best path is the following sequence of nodes:" << endl;
+	cout << endl << "A best path is the following sequence of nodes:" << endl;
 	for(size_t i = 0; i < best_path.size(); i++) {
 		cout << best_path[i];
 		if(i + 1 != best_path.size()) cout << ", ";
@@ -290,16 +306,27 @@ bool valid_args(int argc, char ** argv) {
 #define BATCH
 int main(int argc, char ** argv) {	
 #ifdef BATCH
-	string t_dir = "C:\\Users\\Nicholas\\Documents\\MCS Program\\Q1\\CS271P\\project\\cs271p\\fall20-benchmark-tsp-problems";
+	//string t_dir = "C:\\Users\\Nicholas\\Documents\\MCS Program\\Q1\\CS271P\\project\\cs271p\\fall20-benchmark-tsp-problems";
+	//string t_dir = "C:\\Users\\Nicholas\\Documents\\MCS Program\\Q1\\CS271P\\project\\cs271p\\tb3";
+	string t_dir = "";
 	vector<string> fn_list = get_fn_list(t_dir);
 	//print_v(fn_list, "\n");
 	for (auto a : fn_list) {
+		//cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
 		for (auto p : extract_params(a)) cout << p << " ";
+		//cout << endl << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
 
+		G_TIMER = clock();
+		TSP_COUNT = 0;
+		
 		double t = do_alg(get_dist(a,t_dir));
 		
-		// output
-		cout << t << endl;
+		G_TIMER = clock() - G_TIMER;
+		//cout << "Total time taken = " << ((float)G_TIMER)/CLOCKS_PER_SEC << endl;
+		//cout << "# TSP calls = " << TSP_COUNT << endl;
+		cout << t << " "; 
+		cout << ((float)G_TIMER) / CLOCKS_PER_SEC << " ";
+		cout << TSP_COUNT << endl;
 	}
 #else
 	if(!valid_args(argc,argv)) {
