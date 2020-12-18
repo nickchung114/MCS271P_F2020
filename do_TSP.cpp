@@ -267,7 +267,7 @@ bool is_number(const std::string& s)
 vector<string> get_fn_list(string dest_dir) {
 	ifstream myfile;
 	string line;
-	string INPUT_LIST = "\\list.txt";
+	string INPUT_LIST = dest_dir == "" ? "list.txt" : "\\list.txt";
 	vector<string> fn_list;
 
 	if (file_exists(dest_dir + INPUT_LIST)) {
